@@ -10,3 +10,7 @@
     vertical-align: middle;
     margin: 15px;
 }
+.correct {
+    color: green;
+    font-weight: bold;
+}

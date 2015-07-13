@@ -6,9 +6,10 @@
  * Time: 13:35
  */
 
-include('../db.php');
+include('db.php');
 
-$method = $_SERVER['REQUEST_METHOD'] || 'GET';
+$method = $_REQUEST['act'];
+if(!isset($method)) { $method = 'get'; }
 $catid = $_REQUEST['catid'];
 
 $con = mysql_connect($dbhost, $dbuser, $dbpasswd);
@@ -17,17 +18,16 @@ mysql_select_db($dbname);
 
 
 switch ($method) {
-    case 'GET':
+    case 'get':
         get($catid);
         break;
-    case 'POST':
+    case 'post':
         break;
-    case 'PUT':
+    case 'put':
         break;
-    case 'DELETE':
+    case 'delete':
         break;
 }
-
 
 function get($catid) {
     if($catid) {

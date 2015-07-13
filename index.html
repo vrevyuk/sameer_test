@@ -18,15 +18,15 @@
 <body>
 <div data-role="page" id="mainPage">
     <div data-role="panel" id="mainPanel">
-        <h3>Categories</h3>
-        <ul data-role="listview" id="catList"></ul>
+        <a class="ui-btn ui-corner-all" onclick="testManager.load.catPage()">Categories</a>
+        <a class="ui-btn ui-corner-all" onclick="testManager.load.codePage()">Codes</a>
     </div>
     <div data-role="header">
         <a class="ui-btn" data-icon="false" href="#mainPanel">=</a>
-        <h3>KrokTest</h3>
+            <h3 id="titleHeader">KrokTest</h3>
     </div>
     <div data-role="content">
-        <ul data-role="listview" id="codeList"></ul>
+        <ul data-role="listview" id="listView"></ul>
     </div>
 </div>
 </body>
