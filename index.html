@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title></title>
+    <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css" />
+    <link rel="stylesheet" href="css/index.css" />
+    <script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
+    <script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+    <script src="js/index.js"></script>
+    <script>
+        $(document).bind('ready', function() {
+            testManager.init();
+        });
+    </script>
+</head>
+<body>
+<div data-role="page" id="mainPage">
+    <div data-role="panel" id="mainPanel">
+        <h3>Categories</h3>
+        <ul data-role="listview" id="catList"></ul>
+    </div>
+    <div data-role="header">
+        <a class="ui-btn" data-icon="false" href="#mainPanel">=</a>
+        <h3>KrokTest</h3>
+    </div>
+    <div data-role="content">
+        <ul data-role="listview" id="codeList"></ul>
+    </div>
+</div>
+</body>
+</html>
