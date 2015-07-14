@@ -29,5 +29,34 @@
         <ul data-role="listview" id="listView"></ul>
     </div>
 </div>
+<div data-role="page" id="newQuestion" data-theme="b">
+    <div data-role="header"><h3>Add new question:</h3></div>
+    <div data-role="content">
+        <form>
+            <div data-role="fieldcontain"><label>Question:</label><input type="text" id="question" data-mini="true"></div>
+            <div data-role="fieldcontain"><label>Answer #1:</label><input type="text" id="answer1" data-mini="true"></div>
+            <div data-role="fieldcontain"><label>Answer #2:</label><input type="text" id="answer2" data-mini="true"></div>
+            <div data-role="fieldcontain"><label>Answer #3:</label><input type="text" id="answer3" data-mini="true"></div>
+            <div data-role="fieldcontain"><label>Answer #4:</label><input type="text" id="answer4" data-mini="true"></div>
+            <div data-role="fieldcontain"><label>Answer #5:</label><input type="text" id="answer5" data-mini="true"></div>
+
+            <div data-role="fieldcontain">
+                <fieldset data-role="controlgroup" data-type="horizontal">
+                    <legend>Correct answer:</legend>
+                    <input type="radio" name="correctAnswer" id="ca1" value="1"><label for="ca1">1</label>
+                    <input type="radio" name="correctAnswer" id="ca2" value="2"><label for="ca2">2</label>
+                    <input type="radio" name="correctAnswer" id="ca3" value="3"><label for="ca3">3</label>
+                    <input type="radio" name="correctAnswer" id="ca4" value="4"><label for="ca4">4</label>
+                    <input type="radio" name="correctAnswer" id="ca5" value="5"><label for="ca5">5</label>
+                </fieldset>
+            </div>
+
+            <div class="ui-grid-a">
+                <div class="ui-block-a"><a href="#" class="ui-btn ui-corner-all" onclick="testManager.addQuestion()">Create</a></div>
+                <div class="ui-block-b"><a href="#" class="ui-btn ui-corner-all" data-rel="back">Cancel</a></div>
+            </div>
+        </form>
+    </div>
+</div>
 </body>
 </html>

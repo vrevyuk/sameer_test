@@ -32,7 +32,7 @@ switch ($method) {
 
 function get($catid, $page) {
     if($catid) {
-        $query = 'select c.catname, q.* from categories as c, questions as q where c.id = q.catid and catid = ' . $catid . ' limit ' . (($page-1)*10) . ', 5';
+        $query = 'select c.catname, q.* from categories as c, questions as q where c.id = q.catid and catid = ' . $catid . ' limit ' . (($page-1)*10) . ', 20';
         if($result = mysql_query($query)) {
             $array = array();
             while($r = mysql_fetch_assoc($result)) {

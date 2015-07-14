@@ -9,6 +9,10 @@ testManager = {
     listview: null,
     panel: null,
     init: function () {
+        $('#newQuestion').bind('pagebeforeshow', function() {
+            $('input').val('');
+            $('input #correct1').attr('checked',true).checkboxradio('refresh');
+        } );
         this.listview = $('#listView');
         //this.catList = $('#catList');
         //this.codeList = $('#codeList');
@@ -33,17 +37,52 @@ testManager = {
         }
     },
 
+    addCategory: function () {
+        if(catname = prompt('Category name')) {
+            $.ajax({
+                url: 'db/categories.php?act=post&catname=' + catname,
+                dataType: 'json',
+                success: function (response) {
+                    if(response.status) {
+                        testManager.loadCategories();
+                    } else { alert(response.message); }
+                },
+                error: function(data, status, errorThrow) {
+                    alert(data.responseText);
+                }
+            });
+        }
+    },
+
+    removeCategories: function (catid) {
+        if(confirm('Are you sure?')) {
+            $.ajax({
+                url: 'db/categories.php?act=delete&catid=' + catid,
+                dataType: 'json',
+                success: function (response) {
+                    if(response.status) {
+                        testManager.loadCategories();
+                    } else { alert(response.message); }
+                },
+                error: function(data, status, errorThrow) {
+                    alert(data.responseText);
+                }
+            });
+        }
+    },
+
     loadCategories: function () {
         $.ajax({
             url: 'db/categories.php',
             dataType: 'json',
-            async: 'true',
             success: function(response) {
                 if(response.status) {
                     var list = response.result;
                     testManager.listview.empty();
+                    testManager.listview.append('<li><a class="ui-btn ui-corner-all" style="color: blue;" onclick="testManager.addCategory();">Add new category</a></li>').listview('refresh');
                     list.forEach(function (item, position, all) {
-                        testManager.listview.append('<li data-icon="false" id="cat' + item.id + '"><a onclick="testManager.catDetail(' + item.id + ')">' + item.catname + '</a></li>');
+                        testManager.listview.append('<li data-icon="false" id="cat' + item.id + '"><a onclick="testManager.catDetail(' + item.id + ')">' + item.catname + '</a>' +
+                        '<a data-icon="delete" onclick="testManager.removeCategories(' + item.id + ')"></a></li>');
                     });
                     testManager.listview.listview('refresh');
                 } else { alert(response.message); }
@@ -62,6 +101,12 @@ testManager = {
                 if (response.status) {
                     var res = response.result;
                     testManager.listview.empty();
+                    testManager.listview.append('<div class="ui-grid-b">' +
+                    '<div class="ui-block-a"><a class="ui-btn ui-btn-inline ui-corner-all" href="#newQuestion" data-rel="dialog">+Q</a>' +
+                    '<a class="ui-btn ui-btn-inline ui-corner-all"> << </a></div>' +
+                    '<div class="ui-block-b" align="center"><br><span> 1 .. 20 of 100 </span></div>' +
+                    '<div class="ui-block-c" align="right"><a class="ui-btn ui-btn-inline ui-corner-all"> >> </a></div>' +
+                    '</div>');
                     res.forEach(function (item, position, all) {
                         testManager.title.html(item.catname);
                         li = '<li data-icon="delete">';
@@ -83,6 +128,18 @@ testManager = {
                 alert (data.responseText);
             }
         });
+    },
+
+    addQuestion: function () {
+        var question = $('#question').val();
+        var answer_1 = $('#answer1').val();
+        var answer_2 = $('#answer2').val();
+        var answer_3 = $('#answer3').val();
+        var answer_4 = $('#answer4').val();
+        var answer_5 = $('#answer5').val();
+        //var correct = ;
+        alert('Q: ' + question + ', correct: ' + $("#ca1").val());
+        $('#newQuestion').dialog('close');
     },
 
     loadCode: function () {

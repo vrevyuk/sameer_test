@@ -11,6 +11,7 @@ include('db.php');
 $method = $_REQUEST['act'];
 if(!isset($method)) { $method = 'get'; }
 $catid = $_REQUEST['catid'];
+$catname = $_REQUEST['catname'];
 
 $con = mysql_connect($dbhost, $dbuser, $dbpasswd);
 if(!$con) { die('{"status":false,"message":"Error connection to db"}'); }
@@ -22,18 +23,34 @@ switch ($method) {
         get($catid);
         break;
     case 'post':
+        if(isset($catname)) add($catname);
         break;
     case 'put':
         break;
     case 'delete':
+        if(isset($catid)) delete($catid);
         break;
+}
+
+function delete($catid) {
+    $query = "delete from categories where id = " . $catid;
+    if(mysql_query($query)) {
+        echo '{"status":true}';
+    } else { echo '{"status":false,"message":"Error executing query to db"}'; }
+}
+
+function add($catname) {
+    $query = "insert into categories values (0, '" . mysql_real_escape_string($catname) . "')";
+    if(mysql_query($query)) {
+        echo '{"status":true}';
+    } else { echo '{"status":false,"message":"Error executing query to db"}'; }
 }
 
 function get($catid) {
     if($catid) {
         $query = 'select * from categories where catid = ' . $catid;
     } else {
-        $query = 'select * from categories';
+        $query = 'select * from categories order by id desc';
     }
     if($result = mysql_query($query)) {
         $array = array();
