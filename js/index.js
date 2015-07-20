@@ -6,18 +6,18 @@ testManager = {
     title: null,
     listview: null,
     panel: null,
+    contentDiv: null,
     init: function () {
         $('#newQuestion').bind('pagebeforeshow', function() {
             //$('input').val('');
             //$('input #correct1').attr('checked',true).checkboxradio('refresh');
         } );
         this.listview = $('#listView');
-        //this.catList = $('#catList');
-        //this.codeList = $('#codeList');
+        this.contentDiv = $('#contentDiv');
         this.title = $('#titleHeader');
         this.panel = $('#mainPanel');
-        //this.loadCategories();
-        //this.loadCode();
+
+        this.load.statPage();
     },
 
     ajaxOnError: function (data, status, errorThrow) {
@@ -25,18 +25,48 @@ testManager = {
     },
 
     load: {
+        statPage: function () {
+            testManager.title.html('Statistic');
+            testManager.listview.empty();
+            testManager.getStatistic();
+            testManager.panel.panel('close');
+        },
         catPage: function () {
-            testManager.title.html('Categories of subjects');
-            //testManager.codeList.empty();
+            testManager.title.html('Categories');
             testManager.loadCategories();
             testManager.panel.panel('close');
         },
         codePage: function () {
             testManager.title.html('Access codes');
-            //testManager.catList.empty();
             testManager.loadCode();
             testManager.panel.panel('close');
         }
+    },
+
+    getStatistic: function () {
+        $.ajax({
+            url: 'db/statistic.php',
+            dataType: 'json',
+            success: function (response) {
+                if(response.status) {
+                    var codeStat = response.result.codes;
+                    var questionStat = response.result.questions;
+
+                    var codes = '';
+                    for(i=0; i<codeStat.length; i++) {
+                        codes = '<li><h3>' + (codeStat[i].used==0?'Unused codes: ':'Used codes: ') + codeStat[i].cnt + '</h3></li>';
+                        testManager.listview.append(codes).listview('refresh');
+                    }
+                    testManager.listview.append('<li>&nbsp;</li>').listview('refresh');
+                    var questions = '';
+                    for(i=0; i<questionStat.length; i++) {
+                        questions = '<li><h3>' + questionStat[i].catname + '</h3><p>questions ' + questionStat[i].cnt + '</p></li>';
+                        testManager.listview.append(questions).listview('refresh');
+                    }
+                } else { alert(response.message); }
+            },
+            error: testManager.ajaxOnError
+        });
     },
 
     addCategory: function () {
@@ -89,6 +119,19 @@ testManager = {
         });
     },
 
+    changeCategoryName: function (catid, catname, page) {
+        $.ajax({
+            url: 'db/categories.php?act=put&catid=' + catid + '&catname=' + encodeURIComponent(catname) + '&page=' + page,
+            dataType: 'json',
+            success: function (response) {
+                if(response.status) {
+                    testManager.getQuestions(catid, page);
+                } else { alert(response.message); }
+            },
+            error: testManager.ajaxOnError
+        });
+    },
+
     getQuestions: function (catid, page) {
         var per_page = 10;
         if(page == null || page < 0) page = 0;
@@ -106,16 +149,21 @@ testManager = {
                     $('input[name=formCatId]').val(catid);
                     testManager.listview.append('<div class="ui-grid-b">' +
                     '<div class="ui-block-a">' +
-                    '<a class="ui-btn ui-btn-inline ui-corner-all" href="#newQuestion" data-rel="dialog">+Q</a>' +
+                    '<a class="ui-btn ui-btn-inline ui-corner-all" href="#newQuestion" data-rel="dialog" id="newQuestionBtn">+Q</a>' +
                     '<a class="ui-btn ui-btn-inline ui-corner-all" onclick="testManager.getQuestions('+catid+','+minus_page+')"> << </a></div>' +
                     '<div class="ui-block-b" align="center"><br><span> ' + start_item + ' .. ' + end_item + ' of ' + res.length + ' </span></div>' +
                     '<div class="ui-block-c" align="right">' +
                     '<a class="ui-btn ui-btn-inline ui-corner-all" onclick="testManager.getQuestions('+catid+','+plus_page+')"> >> </a></div>' +
                     '</div>');
+                    $('#newQuestionBtn').bind('click', function () {
+                        $('#formQId').val(0);
+                        //$('#submit').val('Create');
+                    });
+                    var title;
                     for(var i=start_item; i<end_item; i++) {
                         var item = res[i];
-                        testManager.title.html(item.catname);
-                        li = '<li data-icon="delete">';
+                        title = '<a href="#" id="categoryTitle">' + item.catname + '</a>';
+                        li = '<li data-icon="delete" id="question' + item.id + '">';
                         li += '<a><h3>' + item.question + '</h3>';
                         li += '<ol>';
                         li += '<li class="' + (item.success==1?'correct':'') + '">' + item.answer1 + '</li>';
@@ -127,7 +175,32 @@ testManager = {
                         li += '<a onclick="testManager.delQuestion(' + item.id + ',' + item.catid + ')"></a>';
                         li += '</li>';
                         testManager.listview.append(li).listview('refresh');
+                        $('#question'+item.id).bind('click', {item: item}, function(e) {
+                            var item = e.data.item;
+                            var form = $(form);
+
+                            $('#formCatId').val(item.catid);
+                            $('#formQId').val(item.id);
+                            $('#question').val(item.question);
+                            $('#answer1').val(item.answer1);
+                            $('#answer2').val(item.answer2);
+                            $('#answer3').val(item.answer3);
+                            $('#answer4').val(item.answer4);
+                            $('#answer5').val(item.answer5);
+                            $(':radio').forEach(function(item, position, array) { item.attr('checked', false); });
+                            $('#ca'+item.success).attr('checked', 'checked');
+                            $('#submit').val('Update');
+                            //$('#newQuestion').trigger('create');
+                            $.mobile.changePage('#newQuestion', {role:'dialog'});
+                        });
                     }
+                    testManager.title.html(title);
+                    $('#categoryTitle').bind('click', {catid:item.catid, catname: item.catname, page: page}, function (e) {
+                        var name;
+                        if(name = prompt('Category name', e.data.catname)) {
+                            testManager.changeCategoryName(e.data.catid, name, page);
+                        }
+                    });
                     //res.forEach(function (item, position, all) {
                     //});
                 } else { alert(response.message); }
@@ -180,7 +253,7 @@ testManager = {
                     testManager.listview.append('<li><a class="ui-btn ui-corner-all" style="color: blue;" onclick="testManager.addCode()">Add new code</a></li>');
                     result.forEach(function(item, count, all) {
                         testManager.listview.append('<li id="' + item.id + '"><a><h3>' + item.code + '</h3><p>' + item.email + '</p>' +
-                        (item.used == '1'?'<span class="ui-li-count">used</span>':'') + '</a><a data-icon="delete" onclick="testManager.removeCode(' + item.id + ')"></a>' +
+                        (item.used == '1'?'<span class="ui-li-count" style="background: lime;">used</span>':'') + '</a><a data-icon="delete" onclick="testManager.removeCode(' + item.id + ')"></a>' +
                         '</li>').listview('refresh');
                     });
                 } else { alert(response.message); }

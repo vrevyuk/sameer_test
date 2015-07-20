@@ -11,6 +11,7 @@ include('db.php');
 $method = $_REQUEST['act'];
 if(!isset($method)) { $method = 'get'; }
 $catid = $_REQUEST['formCatId'];
+$qid = $_REQUEST['formQId'];
 $question = $_REQUEST['question'];
 $answer1 = $_REQUEST['answer1'];
 $answer2 = $_REQUEST['answer2'];
@@ -25,16 +26,28 @@ if(!$con) { die('{"status":false,"message":"Error connection to db"}'); }
 mysql_select_db($dbname);
 
 if(isset($catid) && isset($question) && isset($answer1) && isset($answer2) && isset($answer3) && isset($answer4) && isset($answer5) && isset($correctAnswer)) {
-    $query = "insert into questions values (0, "
-        . "'" .$catid . "', "
-        . "'" .mysql_real_escape_string($answer1) . "', "
-        . "'" .mysql_real_escape_string($answer2) . "', "
-        . "'" .mysql_real_escape_string($answer3) . "', "
-        . "'" .mysql_real_escape_string($answer4) . "', "
-        . "'" .mysql_real_escape_string($answer5) . "', "
-        . "'" .$correctAnswer . "', "
-        . "'" .mysql_real_escape_string($question) . "'"
-        . ")";
+    if($qid == 0) {
+        $query = "insert into questions values (0, "
+            . "'" .$catid . "', "
+            . "'" .mysql_real_escape_string($answer1) . "', "
+            . "'" .mysql_real_escape_string($answer2) . "', "
+            . "'" .mysql_real_escape_string($answer3) . "', "
+            . "'" .mysql_real_escape_string($answer4) . "', "
+            . "'" .mysql_real_escape_string($answer5) . "', "
+            . "'" .$correctAnswer . "', "
+            . "'" .mysql_real_escape_string($question) . "'"
+            . ")";
+    } else {
+        $query = "UPDATE questions SET "
+            . "answer1 = '" .mysql_real_escape_string($answer1) . "', "
+            . "answer2 = '" .mysql_real_escape_string($answer2) . "', "
+            . "answer3 = '" .mysql_real_escape_string($answer3) . "', "
+            . "answer4 = '" .mysql_real_escape_string($answer4) . "', "
+            . "answer5 = '" .mysql_real_escape_string($answer5) . "', "
+            . "success = '" .$correctAnswer . "', "
+            . "question = '" .mysql_real_escape_string($question) . "' "
+            . "WHERE id = " . $qid;
+    }
     //echo $query;
     if(mysql_query($query)) {
         echo '{"status":true}';

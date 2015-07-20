@@ -14,7 +14,7 @@ if(!$con) { die('{"status":false,"message":"Error connection to db"}'); }
 mysql_select_db($dbname);
 
 if($catid) {
-    $query = 'select c.catname, q.* from categories as c, questions as q where c.id = q.catid and catid = ' . $catid . ' order by q.id desc';
+    $query = 'select c.id as catid, c.catname, q.* from categories as c, questions as q where c.id = q.catid and catid = ' . $catid . ' order by q.id desc';
     if($result = mysql_query($query)) {
         $array = array();
         while($r = mysql_fetch_assoc($result)) {

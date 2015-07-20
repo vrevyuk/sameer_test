@@ -12,6 +12,7 @@ $method = $_REQUEST['act'];
 if(!isset($method)) { $method = 'get'; }
 $catid = $_REQUEST['catid'];
 $catname = $_REQUEST['catname'];
+$page = $_REQUEST['$page'];
 
 $con = mysql_connect($dbhost, $dbuser, $dbpasswd);
 if(!$con) { die('{"status":false,"message":"Error connection to db"}'); }
@@ -26,10 +27,18 @@ switch ($method) {
         if(isset($catname)) add($catname);
         break;
     case 'put':
+        change($catid, $catname);
         break;
     case 'delete':
         if(isset($catid)) delete($catid);
         break;
+}
+
+function change($catid, $catname) {
+    $query = "UPDATE categories SET catname = '" . $catname . "' WHERE id = " . $catid;
+    if(mysql_query($query)) {
+        echo '{"status":true}';
+    } else { echo '{"status":false,"message":"Error executing query to db"}'; }
 }
 
 function delete($catid) {

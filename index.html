@@ -18,6 +18,7 @@
 <body>
 <div data-role="page" id="mainPage">
     <div data-role="panel" id="mainPanel">
+        <a class="ui-btn ui-corner-all" onclick="testManager.load.statPage()">Statistic</a>
         <a class="ui-btn ui-corner-all" onclick="testManager.load.catPage()">Categories</a>
         <a class="ui-btn ui-corner-all" onclick="testManager.load.codePage()">Codes</a>
     </div>
@@ -27,13 +28,15 @@
     </div>
     <div data-role="content">
         <ul data-role="listview" id="listView"></ul>
+        <div data-role="content" id="contentDiv"></div>
     </div>
 </div>
 <div data-role="page" id="newQuestion" data-theme="b">
     <div data-role="header"><h3>Add new question:</h3></div>
     <div data-role="content">
         <form id="newQuestionForm" action="#" method="post" onsubmit="testManager.addQuestion(this); return false;">
-            <input type="hidden" name="formCatId" value="0">
+            <input type="hidden" name="formCatId" id="formCatId" value="0">
+            <input type="hidden" name="formQId" id="formQId" value="0">
             <div data-role="fieldcontain"><label for="question">Question:</label><input type="text" name="question" id="question" data-mini="true"></div>
             <div data-role="fieldcontain"><label for="answer1">Answer #1:</label><input type="text" name="answer1" id="answer1" data-mini="true"></div>
             <div data-role="fieldcontain"><label for="answer2">Answer #2:</label><input type="text" name="answer2" id="answer2" data-mini="true"></div>
@@ -54,7 +57,7 @@
 
             <div class="ui-grid-a">
                 <div class="ui-block-a"><a href="#" class="ui-btn ui-corner-all" data-rel="back">Cancel</a></div>
-                <div class="ui-block-b"><input type="submit" class="ui-btn ui-corner-all" value="Create"></div>
+                <div class="ui-block-b"><input type="submit" class="ui-btn ui-corner-all" id="submit" value="Create/Update"></div>
             </div>
         </form>
     </div>
