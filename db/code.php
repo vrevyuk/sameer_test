@@ -23,12 +23,21 @@ switch ($method) {
     case 'post':
         addCode($email);
         break;
-    case 'put':
+    case 'reset':
+        resetUsed($id);
         break;
     case 'delete':
         delete($id);
         break;
 }
+
+function resetUsed($id) {
+    $query = "UPDATE registration SET used = '0' where id = " . $id;
+    if(mysql_query($query)) {
+        echo '{"status":true}';
+    } else { echo '{"status":false,"message":"Error executing query to db"}'; }
+}
+
 
 function delete($id) {
     $query = "delete from registration where id = " . $id;

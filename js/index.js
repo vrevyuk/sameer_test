@@ -151,13 +151,20 @@ testManager = {
                     '<div class="ui-block-a">' +
                     '<a class="ui-btn ui-btn-inline ui-corner-all" href="#newQuestion" data-rel="dialog" id="newQuestionBtn">+Q</a>' +
                     '<a class="ui-btn ui-btn-inline ui-corner-all" onclick="testManager.getQuestions('+catid+','+minus_page+')"> << </a></div>' +
-                    '<div class="ui-block-b" align="center"><br><span> ' + start_item + ' .. ' + end_item + ' of ' + res.length + ' </span></div>' +
+                    '<div class="ui-block-b"  align="center"><br><span> ' + start_item + ' .. ' + end_item + ' of ' + res.length + ' </span></div>' +
                     '<div class="ui-block-c" align="right">' +
                     '<a class="ui-btn ui-btn-inline ui-corner-all" onclick="testManager.getQuestions('+catid+','+plus_page+')"> >> </a></div>' +
                     '</div>');
                     $('#newQuestionBtn').bind('click', function () {
                         $('#formQId').val(0);
-                        //$('#submit').val('Create');
+                        $('#question').val('');
+                        $('#answer1').val('');
+                        $('#answer2').val('');
+                        $('#answer3').val('');
+                        $('#answer4').val('');
+                        $('#answer5').val('');
+                        $('input:radio').each(function() { this.checked = false; } );
+                        $('#newQuestion').trigger('create');
                     });
                     var title;
                     for(var i=start_item; i<end_item; i++) {
@@ -177,8 +184,6 @@ testManager = {
                         testManager.listview.append(li).listview('refresh');
                         $('#question'+item.id).bind('click', {item: item}, function(e) {
                             var item = e.data.item;
-                            var form = $(form);
-
                             $('#formCatId').val(item.catid);
                             $('#formQId').val(item.id);
                             $('#question').val(item.question);
@@ -187,10 +192,9 @@ testManager = {
                             $('#answer3').val(item.answer3);
                             $('#answer4').val(item.answer4);
                             $('#answer5').val(item.answer5);
-                            $(':radio').forEach(function(item, position, array) { item.attr('checked', false); });
-                            $('#ca'+item.success).attr('checked', 'checked');
-                            $('#submit').val('Update');
-                            //$('#newQuestion').trigger('create');
+                            $('input:radio').each(function() { this.checked = false; } );
+                            document.getElementById('ca'+item.success).checked = true;
+                            $('#newQuestion').trigger('create');
                             $.mobile.changePage('#newQuestion', {role:'dialog'});
                         });
                     }
@@ -252,9 +256,10 @@ testManager = {
                     testManager.listview.empty();
                     testManager.listview.append('<li><a class="ui-btn ui-corner-all" style="color: blue;" onclick="testManager.addCode()">Add new code</a></li>');
                     result.forEach(function(item, count, all) {
-                        testManager.listview.append('<li id="' + item.id + '"><a><h3>' + item.code + '</h3><p>' + item.email + '</p>' +
+                        testManager.listview.append('<li id="code' + item.id + '"><a><h3>' + item.code + '</h3><p>' + item.email + '</p>' +
                         (item.used == '1'?'<span class="ui-li-count" style="background: lime;">used</span>':'') + '</a><a data-icon="delete" onclick="testManager.removeCode(' + item.id + ')"></a>' +
                         '</li>').listview('refresh');
+                        $('#code' + item.id).bind('click', {itemId: item.id}, function (e) { testManager.resetCode(e.data.itemId); });
                     });
                 } else { alert(response.message); }
             },
@@ -286,6 +291,21 @@ testManager = {
                 url: 'db/code.php?act=delete&id='+id,
                 dataType: 'json',
                 success: function(response) {
+                    if(response.status) {
+                        testManager.loadCode();
+                    } else { alert(response.message); }
+                },
+                error: testManager.ajaxOnError
+            });
+        }
+    },
+
+    resetCode: function (cid) {
+        if(confirm('reset used flag for this code?')) {
+            $.ajax({
+                url: 'db/code.php?act=reset&id='+cid,
+                dataType: 'json',
+                success: function (response) {
                     if(response.status) {
                         testManager.loadCode();
                     } else { alert(response.message); }
