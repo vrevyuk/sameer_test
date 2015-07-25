@@ -40,6 +40,11 @@ testManager = {
             testManager.title.html('Access codes');
             testManager.loadCode();
             testManager.panel.panel('close');
+        },
+        searchPage: function () {
+            $('#searchWord').val('');
+            $.mobile.changePage('#searchPage', {role:'dialog'});
+            testManager.panel.panel('close');
         }
     },
 
@@ -132,6 +137,93 @@ testManager = {
         });
     },
 
+    search: function (form, page) {
+        $('#searchPage').dialog('close');
+        var per_page = 10;
+        if(page == null || page < 0) page = 0;
+        var data = $(form).serialize();
+        $.ajax({
+            url: 'db/search.php',
+            data: data,
+            dataType: 'json',
+            success: function (response) {
+                if (response.status) {
+                    var title;
+                    var res = response.result;
+                    var start_item = page * per_page;
+                    var end_item = res.length<(start_item + per_page)?res.length:(start_item + per_page);
+                    var minus_page = page==0?0:page-1;
+                    var plus_page = end_item>=res.length?page:page+1;
+                    testManager.listview.empty();
+                    testManager.title.html('Found ' + res.length + ' records ...');
+
+                    //$('input[name=formCatId]').val(catid);
+                    testManager.listview.append('<div class="ui-grid-b">' +
+                    '<div class="ui-block-a">' +
+                    '<a class="ui-btn ui-btn-inline ui-corner-all" id="prevTable"> << </a></div>' +
+                    '<div class="ui-block-b"  align="center"><br><span> ' + start_item + ' .. ' + end_item + ' of ' + res.length + ' </span></div>' +
+                    '<div class="ui-block-c" align="right">' +
+                    '<a class="ui-btn ui-btn-inline ui-corner-all" id="nextTable"> >> </a></div>' +
+                    '</div>').listview('refresh');
+                    $('#prevTable').bind('click', {formObj: form, pageNumber: minus_page}, function (e) { testManager.search(e.data.formObj, e.data.pageNumber); });
+                    $('#nextTable').bind('click', {formObj: form, pageNumber: plus_page}, function (e) { testManager.search(e.data.formObj, e.data.pageNumber); });
+                    for(var i=start_item; i<end_item; i++) {
+                        var item = res[i];
+                        li = '<li data-icon="delete" id="question' + item.id + '">';
+                        li += '<a><h3>' + item.catname + '</h3>';
+                        li += '<p>' + item.question + '</p>';
+                        li += '<ol>';
+                        li += '<li class="' + (item.success==1?'correct':'') + '"><p>' + item.answer1 + '</p></li>';
+                        li += '<li class="' + (item.success==2?'correct':'') + '"><p>' + item.answer2 + '</p></li>';
+                        li += '<li class="' + (item.success==3?'correct':'') + '"><p>' + item.answer3 + '</p></li>';
+                        li += '<li class="' + (item.success==4?'correct':'') + '"><p>' + item.answer4 + '</p></li>';
+                        li += '<li class="' + (item.success==5?'correct':'') + '"><p>' + item.answer5 + '</p></li>';
+                        li += '</ol></a>';
+                        li += '<a id="delete' + item.id + '"></a>';
+                        li += '</li>';
+                        testManager.listview.append(li).listview('refresh');
+                        $('#delete' + item.id).bind('click', {itemid: item.id, catid: item.catid, formObj: form, page: page}, function (e) {
+                            var callback = {
+                                param1: e.data.formObj,
+                                param2: e.data.page,
+                                callbackFunc: function() { testManager.search(this.param1, this.param2); }
+                            };
+                            testManager.delQuestion(e.data.itemid, e.data.catid, callback);
+                            e.stopPropagation();
+                            e.preventDefault();
+                        });
+                        $('#question'+item.id).bind('click', {item: item, form: form, page: page}, function(e) {
+                            var item = e.data.item;
+                            $('#newQuestionForm').unbind().bind('submit', {form: e.data.form, page: e.data.page}, function(e) {
+                                var callback = {
+                                    param1: e.data.form,
+                                    param2: e.data.page,
+                                    callbackFunc: function() { testManager.search(this.param1, this.param2); }
+                                };
+                                testManager.addQuestion(this, callback);
+                                e.stopPropagation();
+                                e.preventDefault();
+                            });
+                            $('#formCatId').val(item.catid);
+                            $('#formQId').val(item.id);
+                            $('#question').val(item.question);
+                            $('#answer1').val(item.answer1);
+                            $('#answer2').val(item.answer2);
+                            $('#answer3').val(item.answer3);
+                            $('#answer4').val(item.answer4);
+                            $('#answer5').val(item.answer5);
+                            $('input:radio').each(function() { this.checked = false; } );
+                            document.getElementById('ca'+item.success).checked = true;
+                            $('#newQuestion').trigger('create');
+                            $.mobile.changePage('#newQuestion', {role:'dialog'});
+                        });
+                    }
+                } else { alert(response.message); }
+            },
+            error: testManager.ajaxOnError
+        });
+    },
+
     getQuestions: function (catid, page) {
         var per_page = 10;
         if(page == null || page < 0) page = 0;
@@ -140,12 +232,14 @@ testManager = {
             dataType: 'json',
             success: function (response) {
                 if (response.status) {
+                    var title;
                     var res = response.result;
                     var start_item = page * per_page;
                     var end_item = res.length<(start_item + per_page)?res.length:(start_item + per_page);
                     var minus_page = page==0?0:page-1;
                     var plus_page = end_item>=res.length?page:page+1;
                     testManager.listview.empty();
+
                     $('input[name=formCatId]').val(catid);
                     testManager.listview.append('<div class="ui-grid-b">' +
                     '<div class="ui-block-a">' +
@@ -155,7 +249,16 @@ testManager = {
                     '<div class="ui-block-c" align="right">' +
                     '<a class="ui-btn ui-btn-inline ui-corner-all" onclick="testManager.getQuestions('+catid+','+plus_page+')"> >> </a></div>' +
                     '</div>');
-                    $('#newQuestionBtn').bind('click', function () {
+                    $('#newQuestionBtn').bind('click', {catid: catid}, function (ev) {
+                        $('#newQuestionForm').unbind().bind('submit', {catid: ev.data.catid}, function(e) {
+                            var callback = {
+                                param1: e.data.catid,
+                                callbackFunc: function() { testManager.getQuestions(this.param1, 0); }
+                            };
+                            testManager.addQuestion(this, callback);
+                            e.stopPropagation();
+                            e.preventDefault();
+                        });
                         $('#formQId').val(0);
                         $('#question').val('');
                         $('#answer1').val('');
@@ -166,24 +269,43 @@ testManager = {
                         $('input:radio').each(function() { this.checked = false; } );
                         $('#newQuestion').trigger('create');
                     });
-                    var title;
                     for(var i=start_item; i<end_item; i++) {
                         var item = res[i];
                         title = '<a href="#" id="categoryTitle">' + item.catname + '</a>';
                         li = '<li data-icon="delete" id="question' + item.id + '">';
                         li += '<a><h3>' + item.question + '</h3>';
                         li += '<ol>';
-                        li += '<li class="' + (item.success==1?'correct':'') + '">' + item.answer1 + '</li>';
-                        li += '<li class="' + (item.success==2?'correct':'') + '">' + item.answer2 + '</li>';
-                        li += '<li class="' + (item.success==3?'correct':'') + '">' + item.answer3 + '</li>';
-                        li += '<li class="' + (item.success==4?'correct':'') + '">' + item.answer4 + '</li>';
-                        li += '<li class="' + (item.success==5?'correct':'') + '">' + item.answer5 + '</li>';
+                        li += '<li class="' + (item.success==1?'correct':'') + '"><p>' + item.answer1 + '</p></li>';
+                        li += '<li class="' + (item.success==2?'correct':'') + '"><p>' + item.answer2 + '</p></li>';
+                        li += '<li class="' + (item.success==3?'correct':'') + '"><p>' + item.answer3 + '</p></li>';
+                        li += '<li class="' + (item.success==4?'correct':'') + '"><p>' + item.answer4 + '</p></li>';
+                        li += '<li class="' + (item.success==5?'correct':'') + '"><p>' + item.answer5 + '</p></li>';
                         li += '</ol></a>';
-                        li += '<a onclick="testManager.delQuestion(' + item.id + ',' + item.catid + ')"></a>';
+                        li += '<a href="#" id="delete' + item.id + '"></a>';
                         li += '</li>';
                         testManager.listview.append(li).listview('refresh');
-                        $('#question'+item.id).bind('click', {item: item}, function(e) {
+                        $('#delete' + item.id).bind('click', {itemid: item.id, catid: item.catid, page: page}, function (e) {
+                            var callback = {
+                                param1: e.data.catid,
+                                param2: e.data.page,
+                                callbackFunc: function() { testManager.getQuestions(this.param1, this.param2); }
+                            };
+                            testManager.delQuestion(e.data.itemid, e.data.catid, callback);
+                            e.stopPropagation();
+                            e.preventDefault();
+                        });
+                        $('#question'+item.id).bind('click', {item: item, page: page}, function(e) {
                             var item = e.data.item;
+                            $('#newQuestionForm').unbind().bind('submit', {form: this, catid: item.catid, page: e.data.page}, function(e) {
+                                var callback = {
+                                    param1: e.data.catid,
+                                    param2: e.data.page,
+                                    callbackFunc: function() { testManager.getQuestions(this.param1, this.param2); }
+                                };
+                                testManager.addQuestion(this, callback);
+                                e.stopPropagation();
+                                e.preventDefault();
+                            });
                             $('#formCatId').val(item.catid);
                             $('#formQId').val(item.id);
                             $('#question').val(item.question);
@@ -205,15 +327,13 @@ testManager = {
                             testManager.changeCategoryName(e.data.catid, name, page);
                         }
                     });
-                    //res.forEach(function (item, position, all) {
-                    //});
                 } else { alert(response.message); }
             },
             error: testManager.ajaxOnError
         });
     },
 
-    addQuestion: function (form) {
+    addQuestion: function (form, callback) {
         var data = $(form).serialize();
         $.ajax({
             url: 'db/question_add.php',
@@ -221,7 +341,8 @@ testManager = {
             dataType: 'json',
             success: function (response) {
                 if(response.status) {
-                    testManager.getQuestions($('input[name="formCatId"]').val());
+                    callback.callbackFunc();
+                    //testManager.getQuestions($('input[name="formCatId"]').val());
                 } else { alert(response.message); }
             },
             error: testManager.ajaxOnError
@@ -231,14 +352,15 @@ testManager = {
         $('input[name="question"]').val('');
     },
 
-    delQuestion: function (qid, catid) {
+    delQuestion: function (qid, catid, callback) {
         if(confirm('Are you sure?')) {
             $.ajax({
                 url: 'db/question_del.php?qid=' + qid,
                 dataType: 'json',
                 success: function (response) {
                     if(response.status) {
-                        testManager.getQuestions(catid);
+                        callback.callbackFunc();
+                        //testManager.getQuestions(catid);
                     } else { alert(response.message); }
                 },
                 error: testManager.ajaxOnError

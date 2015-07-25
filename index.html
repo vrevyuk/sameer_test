@@ -21,6 +21,7 @@
         <a class="ui-btn ui-corner-all" onclick="testManager.load.statPage()">Statistic</a>
         <a class="ui-btn ui-corner-all" onclick="testManager.load.catPage()">Categories</a>
         <a class="ui-btn ui-corner-all" onclick="testManager.load.codePage()">Codes</a>
+        <a class="ui-btn ui-corner-all" onclick="testManager.load.searchPage()">Search</a>
     </div>
     <div data-role="header">
         <a class="ui-btn" data-icon="false" href="#mainPanel">=</a>
@@ -34,7 +35,7 @@
 <div data-role="page" id="newQuestion" data-theme="b">
     <div data-role="header"><h3>Add new question:</h3></div>
     <div data-role="content">
-        <form id="newQuestionForm" action="#" method="post" onsubmit="testManager.addQuestion(this); return false;">
+        <form id="newQuestionForm" action="#" method="post">
             <input type="hidden" name="formCatId" id="formCatId" value="0">
             <input type="hidden" name="formQId" id="formQId" value="0">
             <div data-role="fieldcontain"><label for="question">Question:</label><input type="text" name="question" id="question" data-mini="true"></div>
@@ -59,6 +60,15 @@
                 <div class="ui-block-a"><a href="#" class="ui-btn ui-corner-all" data-rel="back">Cancel</a></div>
                 <div class="ui-block-b"><input type="submit" class="ui-btn ui-corner-all" id="submit" value="Create/Update"></div>
             </div>
+        </form>
+    </div>
+</div>
+<div data-role="page" id="searchPage" data-theme="b">
+    <div data-role="header"><h3>Search in database</h3></div>
+    <div data-role="content">
+        <form onsubmit="testManager.search(this); return false;">
+            <div data-role="fieldcontain"><label for="searchWord">Search: </label><input type="text" id="searchWord" name="searchWord" size="15" data-mini="true"></div>
+            <input type="submit" class="ui-btn ui-corner-all" id="submitSearch" value="Search">
         </form>
     </div>
 </div>

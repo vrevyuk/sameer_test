@@ -11,6 +11,6 @@
     margin: 15px;
 }
 .correct {
-    color: green;
+    background-color: lime;
     font-weight: bold;
 }
